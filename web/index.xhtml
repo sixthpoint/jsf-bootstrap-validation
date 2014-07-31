@@ -1,0 +1,44 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:h="http://xmlns.jcp.org/jsf/html"
+      xmlns:p="http://xmlns.jcp.org/jsf/passthrough"
+      xmlns:f="http://xmlns.jcp.org/jsf/core"
+      xmlns:c="http://xmlns.jcp.org/jsp/jstl/core">
+    <h:head>
+        <title>JSF Bootstrap Validation</title>
+        <link type="text/css" rel="stylesheet" href="//netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" />
+    </h:head>
+    <h:body>
+        <h3>JSF Bootstrap validation</h3>
+        <h:form id="profileForm">
+            <h:inputText value="#{viewProfile.firstName}" p:placeholder="First Name" required="true" requiredMessage="Please enter a first name">
+                <f:validateLength minimum="3"/>
+            </h:inputText>
+            <h:inputText value="#{viewProfile.lastName}" p:placeholder="Last Name" required="true" requiredMessage="Please enter a last name">
+                <f:validateLength minimum="3"/>
+            </h:inputText>
+            <h:commandButton type="submit" value="Submit" action="#{viewProfile.submit()}">
+                <f:ajax execute="@form" render="@form :messages"/>
+            </h:commandButton>
+        </h:form>
+
+        <h:panelGroup layout="block" id="messages">
+            <c:forEach var="errorCode" items="#{viewProfile.validationOptions()}">
+                <h:panelGroup layout="block" rendered="#{viewProfile.validation('profileForm', errorCode).size() gt 0}">
+                    <h:panelGroup layout="block" styleClass="alert alert-#{errorCode} alert-dismissable">
+                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&#xD7;</button>
+                        <ul>
+                            <c:forEach var="m" items="#{viewProfile.validation('profileForm', errorCode)}">
+                                <li>#{m}</li>
+                            </c:forEach>
+                        </ul>
+                    </h:panelGroup>
+                </h:panelGroup>
+            </c:forEach>
+        </h:panelGroup>
+        <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+        <script src="//netdna.bootstrapcdn.com/bootstrap/3.1.1/js/bootstrap.min.js"></script>
+    </h:body>
+</html>
+
