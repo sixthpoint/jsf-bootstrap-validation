@@ -15,7 +15,7 @@ In some backing java class queue up a message.
 
 
 ```java
-FacesUtil.queueMessage("we have sucess", "success");
+FacesUtil.queueMessage("we have success", "success");
 ```
 
 
