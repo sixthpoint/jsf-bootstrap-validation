@@ -18,6 +18,11 @@ import javax.faces.context.FacesContext;
 public class FacesUtil {
 
     /**
+     * This is our session name
+     */
+    private static final String sessionToken = "MULTIPAGE-MESSAGES";
+
+    /**
      * Options allowed for errors, taken from bootstrap classes
      */
     private static List<String> errorCodes = new ArrayList<String>() {
@@ -27,6 +32,59 @@ public class FacesUtil {
             add("success");
         }
     };
+
+    /**
+     * Saves all messages queued to the sessionToken
+     *
+     * @param facesContext
+     */
+    private static void saveMessages(final FacesContext facesContext) {
+        HashMap<String, FacesMessage> messages = new HashMap<>();
+        for (Iterator<String> iter = facesContext.getClientIdsWithMessages(); iter.hasNext();) {
+
+            String clientId = iter.next();
+            Iterator<FacesMessage> facesIterator = facesContext.getMessages(clientId);
+
+            while (facesIterator.hasNext()) {
+                messages.put(clientId, facesIterator.next());
+                iter.remove();
+            }
+        }
+
+        if (messages.isEmpty()) {
+            return;
+        }
+
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        HashMap<String, FacesMessage> existingMessages = (HashMap<String, FacesMessage>) sessionMap.get(sessionToken);
+        if (existingMessages != null) {
+            existingMessages.putAll(messages);
+        } else {
+            sessionMap.put(sessionToken, messages);
+        }
+    }
+
+    /**
+     * Finds all the messages in the sessionToken and adds them
+     *
+     * @param facesContext
+     */
+    private static void restoreMessages(final FacesContext facesContext) {
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        HashMap<String, FacesMessage> messages = (HashMap<String, FacesMessage>) sessionMap.remove(sessionToken);
+
+        if (messages == null) {
+            return;
+        }
+
+        Iterator it = messages.entrySet().iterator();
+        while (it.hasNext()) {
+            Map.Entry pairs = (Map.Entry) it.next();
+            Object fm = pairs.getValue();
+            facesContext.addMessage(pairs.getKey().toString(), (FacesMessage) fm);
+            it.remove();
+        }
+    }
 
     /**
      * The default way to queue a message, it takes a error level of "warning"
@@ -67,6 +125,7 @@ public class FacesUtil {
         }
 
         FacesContext.getCurrentInstance().addMessage(UIComponent.getCurrentComponent(FacesContext.getCurrentInstance()).getClientId(), message);
+        saveMessages(FacesContext.getCurrentInstance());
     }
 
     /**
@@ -81,7 +140,7 @@ public class FacesUtil {
 
     /**
      * Gets all messages in a array list of a given severity type. Specify
-     * severity as danger, warning, success
+     * severity as "error", "warn", or "info"
      *
      * @param formId
      * @param severity
@@ -89,7 +148,13 @@ public class FacesUtil {
      */
     public static Collection<String> getMessages(String formId, String severity) {
 
+        // Get the Faces Context
         FacesContext facesContext = FacesContext.getCurrentInstance();
+
+        // Restore other messages
+        restoreMessages(facesContext);
+
+        // Get the root of the UIComponent
         UIViewRoot root = facesContext.getViewRoot();
 
         // Iterator to iterate through the client ID's
@@ -98,11 +163,13 @@ public class FacesUtil {
         // Map all the messages by error level
         Map<String, Collection<String>> map = new HashMap<>();
 
+        // Did they enter a valid severity
         if (!errorCodes.contains(severity)) {
             Logger.getLogger(FacesUtil.class.getName()).log(Level.SEVERE, null, "Improper api usage");
             return map.get(severity);
         }
 
+        // Determine error categories
         String errorLevel = "";
         switch (severity) {
             case "danger":
@@ -129,11 +196,12 @@ public class FacesUtil {
             UIComponent parentForm = findParentForm(baseComponent);
 
             // If the form ID was specified and its not the true parent, we skip this iteration
-            if (parentForm == null || (!formId.equals("") && !parentForm.getId().equals(formId))) {
+            if (!formId.equals("") && (parentForm == null || (!formId.equals("") && !parentForm.getId().equals(formId)))) {
                 continue;
             }
 
-            if (baseComponent != null) {
+            // If the formId is not specified we always display it as a global message
+            if (formId.equals("") || baseComponent != null) {
 
                 // Return an Iterator over the FacesMessages
                 Iterator<FacesMessage> facesIterator = facesContext.getMessages(clientId);

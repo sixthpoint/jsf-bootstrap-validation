@@ -28,10 +28,14 @@ public class ViewProfile implements Serializable {
 
     /**
      * On submit, we queue a success message
+     *
+     * @return
      */
-    public void submit() {
+    public String submit() {
 
         FacesUtil.queueMessage("we have sucess", "success");
+        return "welcome?faces-redirect=true";
+
     }
 
     /**
@@ -53,6 +57,16 @@ public class ViewProfile implements Serializable {
      */
     public Collection<String> validation(String formId, String level) {
         return FacesUtil.getMessages(formId, level);
+    }
+
+    /**
+     * Get all messages based on no form id
+     *
+     * @param level
+     * @return
+     */
+    public Collection<String> validation(String level) {
+        return FacesUtil.getMessages(level);
     }
 
     /**
