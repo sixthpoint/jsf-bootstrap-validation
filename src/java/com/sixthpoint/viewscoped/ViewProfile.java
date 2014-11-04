@@ -15,6 +15,8 @@ import javax.faces.bean.ViewScoped;
 @ManagedBean
 @ViewScoped
 public class ViewProfile implements Serializable {
+    
+    private static final long serialVersionUID = -6053336445484516230L;
 
     private String firstName;
     private String lastName;
@@ -33,8 +35,8 @@ public class ViewProfile implements Serializable {
      */
     public String submit() {
 
-        FacesUtil.queueMessage("we have sucess", "success");
-        FacesUtil.queueMessage("another success", "success");
+        FacesUtil.queueMessage("we have sucess", FacesUtil.MESSAGE_SUCCESS);
+        FacesUtil.queueMessage("another success", FacesUtil.MESSAGE_SUCCESS);
         return "welcome?faces-redirect=true";
 
     }

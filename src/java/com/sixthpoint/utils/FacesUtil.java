@@ -18,6 +18,26 @@ import javax.faces.context.FacesContext;
 public class FacesUtil {
 
     /**
+     * Failure message
+     */
+    public static final String MESSAGE_FAILURE = "danger";
+
+    /**
+     * Warning message
+     */
+    public static final String MESSAGE_WARNING = "warning";
+
+    /**
+     * Success message
+     */
+    public static final String MESSAGE_SUCCESS = "success";
+
+    /**
+     * Information message
+     */
+    public static final String MESSAGE_INFO = "info";
+
+    /**
      * This is our session name
      */
     private static final String sessionToken = "MULTIPAGE-MESSAGES";
@@ -26,6 +46,7 @@ public class FacesUtil {
      * Options allowed for errors, taken from bootstrap classes
      */
     private static List<String> errorCodes = new ArrayList<String>() {
+        private static final long serialVersionUID = 1L;
         {
             add("danger");
             add("warning");
