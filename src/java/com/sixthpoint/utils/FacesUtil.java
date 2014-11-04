@@ -39,28 +39,35 @@ public class FacesUtil {
      * @param facesContext
      */
     private static void saveMessages(final FacesContext facesContext) {
-        HashMap<String, FacesMessage> messages = new HashMap<>();
+
+        // get existing messages map from session
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        HashMap<String, List<FacesMessage>> messagesByIDMap = (HashMap<String, List<FacesMessage>>) sessionMap.get(sessionToken);
+
+        // If it doesn't exist make one
+        if (messagesByIDMap == null) {
+            messagesByIDMap = new HashMap<>();
+            sessionMap.put(sessionToken, messagesByIDMap);
+        }
+
+        // Iterate through all messages that are waiting in queue
         for (Iterator<String> iter = facesContext.getClientIdsWithMessages(); iter.hasNext();) {
 
             String clientId = iter.next();
+            List<FacesMessage> messageList = messagesByIDMap.get(clientId);
+
+            // If no messages for client ID yet create empty arrayList
+            if (messageList == null) {
+                messageList = new ArrayList<>();
+                messagesByIDMap.put(clientId, messageList);
+            }
+
             Iterator<FacesMessage> facesIterator = facesContext.getMessages(clientId);
 
+            // Add all the messages for that client ID to the session
             while (facesIterator.hasNext()) {
-                messages.put(clientId, facesIterator.next());
-                iter.remove();
+                messageList.add(facesIterator.next());
             }
-        }
-
-        if (messages.isEmpty()) {
-            return;
-        }
-
-        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
-        HashMap<String, FacesMessage> existingMessages = (HashMap<String, FacesMessage>) sessionMap.get(sessionToken);
-        if (existingMessages != null) {
-            existingMessages.putAll(messages);
-        } else {
-            sessionMap.put(sessionToken, messages);
         }
     }
 
@@ -70,19 +77,20 @@ public class FacesUtil {
      * @param facesContext
      */
     private static void restoreMessages(final FacesContext facesContext) {
-        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
-        HashMap<String, FacesMessage> messages = (HashMap<String, FacesMessage>) sessionMap.remove(sessionToken);
 
-        if (messages == null) {
+        Map<String, Object> sessionMap = facesContext.getExternalContext().getSessionMap();
+        HashMap<String, List<FacesMessage>> messagesByIDMap = (HashMap<String, List<FacesMessage>>) sessionMap.remove(sessionToken);
+
+        if (messagesByIDMap == null) {
             return;
         }
 
-        Iterator it = messages.entrySet().iterator();
-        while (it.hasNext()) {
-            Map.Entry pairs = (Map.Entry) it.next();
-            Object fm = pairs.getValue();
-            facesContext.addMessage(pairs.getKey().toString(), (FacesMessage) fm);
-            it.remove();
+        // Add all messages by client ID back to the facesContext
+        for (String clientID : messagesByIDMap.keySet()) {
+            List<FacesMessage> messages = messagesByIDMap.get(clientID);
+            for (FacesMessage facesMessage : messages) {
+                facesContext.addMessage(clientID, facesMessage);
+            }
         }
     }
 

@@ -34,6 +34,7 @@ public class ViewProfile implements Serializable {
     public String submit() {
 
         FacesUtil.queueMessage("we have sucess", "success");
+        FacesUtil.queueMessage("another success", "success");
         return "welcome?faces-redirect=true";
 
     }
