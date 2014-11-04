@@ -8,7 +8,9 @@ Background
 
 A project called for multiple forms on a page with different areas being validated. This class was made to create a very simply way to display errors based on formId. Bootstrap 3 was used to highlight invalid fields and render errors.
 
-Update: I have session mapping to allow for messages to be passed from view to view.
+Update (9/1/14): Session mapping to allow for messages to be passed from view to view.
+
+Update (11/4/14): Multiple queue messages based on clientID added. Queue up as many messages as you want to be passed from view to view.
 
 Usage
 ------------
