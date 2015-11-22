@@ -1,4 +1,4 @@
-jsf-bootstrap-validation
+JSF Bootstrap Validation
 ========================
 
 Displaying errors with JSF 2.2 and Bootstrap CSS the simple way.
